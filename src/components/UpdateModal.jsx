@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Grid,
   Box,
-  Typography,
   TextField,
   FormControl,
   InputLabel,
@@ -11,52 +10,48 @@ import {
   Button,
   FormHelperText,
 } from "@mui/material";
-import { Add } from "@mui/icons-material";
 import { useFormik } from "formik";
-import * as yup from "yup";
 import { useDispatch } from "react-redux";
-import { addJob } from "../redux/reducer";
-function CreateJob() {
+import { closeModal, updateJob } from "../redux/reducer";
+
+function UpdateModal({ item }) {
   const dispatch = useDispatch();
   const formik = useFormik({
     initialValues: {
       description: "",
       priority: "",
     },
-    validationSchema: yup.object().shape({
-      description: yup.string().required("Zorunlu alan"),
-      priority: yup.number().required("Zorunlu alan"),
-    }),
     onSubmit: (values) => {
-      dispatch(addJob({ ...values, id: Math.floor(Math.random() * 100000) }));
-      formik.resetForm();
+      dispatch(updateJob({ ...values, id: item.id }));
     },
   });
+  const handleClose = () => {
+    dispatch(closeModal());
+  };
+
+  useEffect(() => {
+    formik.setValues({
+      ...formik.values,
+      description: item.description,
+      priority: item.priority,
+    });
+  }, []);
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <Box my={3}>
-        <Typography variant="h6">Create New Job</Typography>
         <Box mt={2}>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={7}>
+            <Grid item xs={6}>
               <TextField
                 fullWidth
                 variant="outlined"
                 label="Job Name"
-                value={formik.values.description}
-                onChange={(e) =>
-                  formik.setFieldValue("description", e.target.value)
-                }
-                error={
-                  formik.touched.description &&
-                  Boolean(formik.errors.description)
-                }
-                helperText={
-                  formik.touched.description && formik.errors.description
-                }
+                value={item.description}
+                disabled
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={6}>
               <FormControl
                 fullWidth
                 error={
@@ -84,22 +79,29 @@ function CreateJob() {
                 )}
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={2}>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                color="primary"
-                type="submit"
-                fullWidth
-                style={{ minHeight: "50px" }}
-              >
-                Create
-              </Button>
-            </Grid>
           </Grid>
         </Box>
+      </Box>
+      <Box mt={2}>
+        <Grid container justifyContent="flex-end">
+          <Grid item xs={4} md={3}>
+            <Button variant="contained" onClick={handleClose}>
+              Cancel
+            </Button>
+          </Grid>
+          <Grid item xs={4} md={3}>
+            <Button
+              variant="contained"
+              color="error"
+              type="submit"
+            >
+              Save
+            </Button>
+          </Grid>
+        </Grid>
       </Box>
     </form>
   );
 }
-export default CreateJob;
+
+export default UpdateModal;
